@@ -8,7 +8,7 @@ import { QuickCalculator } from "@/components/QuickCalculator";
 import { Reveal } from "@/components/Reveal";
 import { useLocale } from "@/components/LocaleProvider";
 import { serviceCards, type ServiceCardKey } from "@/config/services";
-import { tariffs, type TariffKey } from "@/config/tariffs";
+import { hourlyRates, tariffs, type TariffKey } from "@/config/tariffs";
 import { company } from "@/config/company";
 import { formatNumber } from "@/lib/format";
 import type { CopyKey } from "@/config/i18n";
@@ -212,6 +212,19 @@ export default function Home() {
                 );
               })}
             </div>
+            <Reveal className="hourly">
+              <h3>{t("hourlyTitle")}</h3>
+              <ul className="hourly-list">
+                {hourlyRates.map((rate) => (
+                  <li className="hourly-item" key={rate.key}>
+                    <span>{t(rate.key === "movers" ? "hourlyMovers" : "hourlyVanDriver")}</span>
+                    <b>{t("priceFrom")} {formatNumber(rate.price)}&nbsp;€</b>
+                    <small>{t("perHour")}</small>
+                  </li>
+                ))}
+              </ul>
+              <p>{t("hourlyNote")}</p>
+            </Reveal>
             <p className="pricing-note">{t("pricingNote")}</p>
           </div>
         </section>

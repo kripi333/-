@@ -178,9 +178,11 @@ html.js .reveal.is-visible {
   color: #fff;
   box-shadow: 0 6px 16px rgba(21, 123, 232, .28);
 }
-.logo-text { display: inline-flex; align-items: baseline; gap: 5px; font-size: 1.15rem; letter-spacing: -.03em; font-weight: 800; }
-.logo-text b { font-weight: 800; }
-.logo-text i { font-style: normal; font-weight: 600; color: var(--blue); }
+.logo-text { display: inline-flex; flex-direction: column; line-height: 1.05; }
+.logo-text b { font-size: 1.06rem; font-weight: 800; letter-spacing: -.035em; }
+.logo-text i { font-size: .62rem; font-style: normal; font-weight: 650; letter-spacing: .3em; text-transform: uppercase; color: var(--blue); }
+.logo-img { display: block; width: auto; height: 38px; }
+.logo-img-mark { height: 34px; }
 .logo-light .logo-text { color: #fff; }
 .logo-light .logo-text i { color: #7cc3ff; }
 
@@ -507,6 +509,15 @@ html.js .reveal.is-visible {
 .tariff-individual .tariff-cta { background: #fff; color: var(--deep); box-shadow: var(--shadow-sm); }
 .tariff-individual .tariff-cta:hover { background: var(--blue-100); }
 .pricing-note { font-size: .78rem; color: #76899b; text-align: center; margin: 26px auto 0; max-width: 700px; }
+
+.hourly { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 22px; display: grid; grid-template-columns: 1fr auto; gap: 16px 26px; align-items: center; }
+.hourly h3 { font-size: .95rem; }
+.hourly p { grid-column: 1 / -1; font-size: .78rem; color: #76899b; margin: 0; }
+.hourly-list { display: flex; gap: 10px; flex-wrap: wrap; }
+.hourly-item { display: flex; align-items: baseline; gap: 8px; padding: 10px 16px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--blue-50); }
+.hourly-item span { font-size: .82rem; font-weight: 650; color: #4f6a80; }
+.hourly-item b { font-size: .95rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hourly-item small { font-size: .72rem; color: var(--muted); font-weight: 600; }
 
 /* ---------- Портфолио, география, FAQ ---------- */
 .portfolio { background: var(--blue-50); }
@@ -844,18 +855,13 @@ html.js .reveal.is-visible {
 }
 
 /* ---------- Телефоны ---------- */
-@media (max-width: 720px) {
-  .shell { width: min(100% - 32px, 1160px); }
-  .section { padding: 68px 0; }
-  .section-heading { display: block; margin-bottom: 26px; }
-  .section-heading > p { margin-top: 14px; }
-  .header { height: 66px; }
+/* ---------- Планшет: навигация сворачивается в меню ---------- */
+@media (max-width: 1024px) {
   .menu { display: block; }
-  .header-call { display: grid; }
   .navlinks {
     display: none;
     position: absolute;
-    left: 0; right: 0; top: 65px;
+    left: 0; right: 0; top: 77px;
     padding: 18px 20px 22px;
     background: #fff;
     border-bottom: 1px solid var(--line);
@@ -866,7 +872,19 @@ html.js .reveal.is-visible {
   }
   .navlinks.is-open { display: flex; }
   .navlinks .button { width: 100%; }
+  .navlinks > a:not(.button) { font-size: .95rem; }
   .lang-switch { margin: 4px 0; }
+  .nav-phone { display: block; }
+}
+
+@media (max-width: 720px) {
+  .shell { width: min(100% - 32px, 1160px); }
+  .section { padding: 68px 0; }
+  .section-heading { display: block; margin-bottom: 26px; }
+  .section-heading > p { margin-top: 14px; }
+  .header { height: 66px; }
+  .header-call { display: grid; }
+  .navlinks { top: 65px; }
   .lang-switch button { padding: 7px 11px; }
 
   .hero { background: linear-gradient(165deg, #fff 56%, var(--blue-100) 56%); }
@@ -893,6 +911,9 @@ html.js .reveal.is-visible {
   .process-grid, .faq-grid { grid-template-columns: 1fr; gap: 30px; }
   .tariff-card { padding: 24px 20px; }
   .tariff-price b { font-size: 1.75rem; }
+  .hourly { grid-template-columns: 1fr; }
+  .hourly-list { width: 100%; }
+  .hourly-item { flex: 1 1 auto; justify-content: center; }
   .area { padding: 56px 0; }
   .area-box { display: block; padding: 28px 22px; }
   .map-art { margin-top: 26px; min-height: 220px; }

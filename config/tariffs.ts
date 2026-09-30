@@ -21,3 +21,14 @@ export const tariffs: readonly Tariff[] = [
   { key: "comfort", from: 490, href: "/calculator?type=apartment&tariff=comfort" },
   { key: "individual", from: null, href: "/calculator?tariff=individual", featured: true },
 ] as const;
+
+/**
+ * Отдельные услуги по часам — раньше это были две карточки в блоке цен.
+ * Оставляем их как дополнение к трём тарифам, чтобы ничего не потерялось.
+ */
+export type HourlyRateKey = "movers" | "vanDriver";
+
+export const hourlyRates: readonly { key: HourlyRateKey; price: number }[] = [
+  { key: "movers", price: 39 },
+  { key: "vanDriver", price: 79 },
+] as const;
