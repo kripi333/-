@@ -1,4 +1,32 @@
 "use client";
-import { Header } from "@/components/Header"; import { Footer } from "@/components/Footer"; import { useLocale } from "@/components/LocaleProvider";
-const x={de:{title:"Impressum",note:"Platzhalter: Vor Veröffentlichung sind Rechtsform, vertretungsberechtigte Person, Umsatzsteuer-ID sowie ggf. Registerangaben durch die tatsächlichen Unternehmensdaten zu ersetzen."},en:{title:"Legal notice",note:"Placeholder: Before publication, replace the legal form, authorized representative, VAT ID and any register information with the actual company details."},uk:{title:"Правова інформація",note:"Заповнювач: перед публікацією необхідно замінити організаційно-правову форму, уповноважену особу, VAT ID та реєстраційні дані на фактичні дані компанії."},ru:{title:"Правовая информация",note:"Заглушка: перед публикацией необходимо заменить организационно-правовую форму, уполномоченное лицо, VAT ID и регистрационные данные на фактические данные компании."}};
-export default function Impressum(){const {locale,t}=useLocale();return <><Header/><main className="legal shell"><p className="eyebrow">{t("legal")}</p><h1>{x[locale].title}</h1><p><b>UmzugKlar</b><br/>Musterstraße 24<br/>10115 Berlin</p><p>+49 30 123 45 678<br/>hallo@umzugklar.de</p><p className="fineprint">{x[locale].note}</p></main><Footer/></>}
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { useLocale } from "@/components/LocaleProvider";
+import { company } from "@/config/company";
+
+export default function Impressum() {
+  const { t } = useLocale();
+  return (
+    <>
+      <Header />
+      <main className="legal shell">
+        <p className="eyebrow">{t("legal")}</p>
+        <h1>{t("imprintTitle")}</h1>
+        <p>
+          <b>{company.name}</b>
+          <br />
+          {company.legal.street}
+          <br />
+          {company.legal.city}
+        </p>
+        <p>
+          <a href={company.phone.href}>{company.phone.display}</a>
+          <br />
+          <a href={`mailto:${company.email}`}>{company.email}</a>
+        </p>
+        <p className="fineprint">{t("imprintNote")}</p>
+      </main>
+      <Footer />
+    </>
+  );
+}

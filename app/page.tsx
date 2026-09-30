@@ -2,15 +2,294 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Icon } from "@/components/Icon";
+import { MobileBar } from "@/components/MobileBar";
+import { Icon, type IconName } from "@/components/Icon";
 import { QuickCalculator } from "@/components/QuickCalculator";
+import { Reveal } from "@/components/Reveal";
 import { useLocale } from "@/components/LocaleProvider";
+import { serviceCards, type ServiceCardKey } from "@/config/services";
+import { tariffs, type TariffKey } from "@/config/tariffs";
+import { company } from "@/config/company";
+import { formatNumber } from "@/lib/format";
+import type { CopyKey } from "@/config/i18n";
 
-const localized = {
- de:{services:[["Wohnungsumzug","Von der Einzimmerwohnung bis zur Altbauwohnung – mit Planung und Sorgfalt.","building"],["Hausumzug","Ihr Zuhause zieht mit. Wir organisieren die Details und die passende Mannschaft.","truck"],["Büroumzug","Damit Ihr Team schnell wieder arbeitsbereit ist – auch außerhalb der Geschäftszeiten.","layers"],["Möbeltransport","Ein Lieblingsstück oder die ganze Einrichtung: sicher von Tür zu Tür.","sofa"],["Einpackservice","Wir bringen das Material und verpacken, was Ihnen wichtig ist.","box"],["Fernumzug","Gut vorbereitet in die nächste Stadt – deutschlandweit und auf Anfrage in Europa.","pin"]],steps:[["01","Preisrahmen berechnen","Geben Sie die wichtigsten Eckdaten ein – unverbindlich und ohne Anmeldung."],["02","Anfrage senden","Mit einem Klick schicken Sie uns Ihren Preisrahmen und Ihre Kontaktdaten."],["03","Details abstimmen","Wir melden uns persönlich, klären offene Fragen und bestätigen Ihr Angebot."],["04","Entspannt umziehen","Unser Team übernimmt, während Sie sich auf das Neue freuen können."]],faqs:[["Wie wird mein Preis berechnet?","Ihr Richtwert setzt sich aus Umfang, Strecke, Etagen und gewählten Zusatzleistungen zusammen. Nach einem kurzen Gespräch erhalten Sie ein verbindliches Angebot."],["Kann ich auch nur Umzugshelfer buchen?","Ja. Wir stellen Ihnen auf Wunsch erfahrene Helfer für das Tragen, Laden oder Aufbauen zur Verfügung."],["Was passiert, wenn sich mein Termin ändert?","Sagen Sie uns einfach so früh wie möglich Bescheid. Gemeinsam finden wir eine passende Alternative."],["Sind meine Möbel versichert?","Für jeden Auftrag klären wir den passenden Versicherungsschutz transparent mit Ihnen vorab."]]},
- en:{services:[["Apartment move","From a studio to a large apartment — carefully planned and executed.","building"],["House move","Your whole home moves with you. We organize the details and the right team.","truck"],["Office move","So your team can get back to work quickly, including outside business hours.","layers"],["Furniture transport","One favorite piece or a whole interior — safely from door to door.","sofa"],["Packing service","We bring the materials and pack what matters to you.","box"],["Long-distance move","Well prepared for the next city — across Germany and, on request, Europe.","pin"]],steps:[["01","Calculate a price range","Enter the key details — free and without registration."],["02","Send enquiry","Send us your estimate and contact details with one click."],["03","Confirm details","We contact you personally, clarify questions and confirm the offer."],["04","Move with ease","Our team takes over while you focus on your new place."]],faqs:[["How is my price calculated?","Your estimate is based on volume, distance, floors and selected extras. After a short conversation you receive a confirmed offer."],["Can I book movers only?","Yes. We can provide experienced helpers for carrying, loading or assembly."],["What if my date changes?","Tell us as early as possible and we will find a suitable alternative together."],["Is my furniture insured?","We clarify the appropriate insurance cover transparently before every job."]]},
- uk:{services:[["Квартирний переїзд","Від студії до великої квартири — з плануванням і турботою.","building"],["Переїзд будинку","Ваш дім переїжджає разом з вами. Ми організуємо деталі та потрібну команду.","truck"],["Офісний переїзд","Щоб ваша команда швидко повернулася до роботи, навіть поза робочим часом.","layers"],["Перевезення меблів","Один предмет або весь інтер’єр — безпечно від дверей до дверей.","sofa"],["Пакування","Ми привеземо матеріали та запакуємо все важливе.","box"],["Далекі переїзди","Підготовлений переїзд до іншого міста — Німеччиною та за запитом Європою.","pin"]],steps:[["01","Розрахуйте діапазон ціни","Введіть основні дані — без зобов’язань і реєстрації."],["02","Надішліть заявку","Одним кліком передайте нам розрахунок і контактні дані."],["03","Уточніть деталі","Ми зв’яжемося особисто, відповімо на питання та підтвердимо пропозицію."],["04","Переїжджайте спокійно","Наша команда бере роботу на себе, а ви зосереджуєтесь на новому місці."]],faqs:[["Як розраховується ціна?","Орієнтовна ціна залежить від обсягу, відстані, поверхів і додаткових послуг. Після короткого уточнення ви отримаєте підтверджену пропозицію."],["Чи можна замовити лише вантажників?","Так. Ми можемо надати досвідчених працівників для перенесення, завантаження або складання."],["Що робити, якщо дата зміниться?","Повідомте нас якомога раніше — разом знайдемо відповідну альтернативу."],["Чи застраховані мої меблі?","Перед кожним замовленням ми прозоро узгоджуємо відповідне страхове покриття."]]},
- ru:{services:[["Квартирный переезд","От студии до большой квартиры — с планированием и аккуратной работой.","building"],["Переезд дома","Ваш дом переезжает вместе с вами. Мы организуем детали и подходящую команду.","truck"],["Офисный переезд","Чтобы ваша команда быстро вернулась к работе, даже вне рабочих часов.","layers"],["Перевозка мебели","Один любимый предмет или весь интерьер — безопасно от двери до двери.","sofa"],["Упаковка","Мы привезём материалы и упакуем всё важное.","box"],["Дальние переезды","Подготовленный переезд в другой город — по Германии и по запросу по Европе.","pin"]],steps:[["01","Рассчитайте диапазон цены","Введите основные данные — без обязательств и регистрации."],["02","Отправьте заявку","Одним кликом передайте нам расчёт и контактные данные."],["03","Уточните детали","Мы свяжемся лично, ответим на вопросы и подтвердим предложение."],["04","Переезжайте спокойно","Наша команда берёт работу на себя, а вы занимаетесь новым местом."]],faqs:[["Как рассчитывается цена?","Ориентировочная цена зависит от объёма, расстояния, этажей и дополнительных услуг. После короткого уточнения вы получите подтверждённое предложение."],["Можно заказать только грузчиков?","Да. Мы можем предоставить опытных сотрудников для переноски, погрузки или сборки."],["Что будет, если дата изменится?","Сообщите нам как можно раньше — вместе найдём подходящую альтернативу."],["Моя мебель застрахована?","Перед каждым заказом мы прозрачно согласовываем подходящее страховое покрытие."]]}
-} as const;
-const cases=[ ["Altbauwohnung in Neukölln","62 m² · 14 km · 2 Umzugshelfer","https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=900&q=80"],["Familienhaus nach Potsdam","125 m² · 31 km · Verpackungsservice","https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80"],["Neustart für ein Kreativstudio","18 Arbeitsplätze · Wochenendtermin","https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80"]] as const;
-export default function Home(){const {locale,t}=useLocale();const d=localized[locale];return <><Header/><main><section className="hero"><div className="shell hero-grid"><div className="hero-copy"><p className="eyebrow">{t("homeEyebrow")}</p><h1>{t("heroTitle1")}<br/><em>{t("heroTitle2")}</em></h1><p className="lead">{t("heroLead")}</p><div className="hero-actions"><Link className="button" href="/calculator">{t("calculate")} <Icon name="arrow" size={18}/></Link><a className="text-link" href="#kontakt">{t("consultation")} <Icon name="arrow" size={16}/></a></div><div className="trust-row"><span><Icon name="clock" size={19}/> {t("sameDay")}</span><span><Icon name="shield" size={19}/> {t("transparent")}</span></div></div><div className="hero-art"><div className="hero-image" role="img" aria-label="Moving team"></div><div className="hero-note"><span className="round-icon"><Icon name="check" size={17}/></span><div><b>{t("allInView")}</b><small>{t("planToBuild")}</small></div></div><div className="hero-chip"><Icon name="truck" size={20}/><span>{t("teamReady").split("\n").map((x,i)=><span key={i}>{x}{i===0&&<br/>}</span>)}</span></div></div></div></section><QuickCalculator/><section className="section advantage"><div className="shell"><div className="section-heading centered"><p className="eyebrow">{t("countOn")}</p><h2>{t("calmer1")}<br/>{t("calmer2")}</h2></div><div className="benefit-grid"><article><span><Icon name="layers"/></span><h3>{t("planFits")}</h3><p>{t("planFitsText")}</p></article><article><span><Icon name="shield"/></span><h3>{t("care")}</h3><p>{t("careText")}</p></article><article><span><Icon name="clock"/></span><h3>{t("reachable")}</h3><p>{t("reachableText")}</p></article></div></div></section><section id="leistungen" className="section services"><div className="shell"><div className="section-heading"><div><p className="eyebrow">{t("ourServices")}</p><h2>{t("helpNeed1")}<br/>{t("helpNeed2")}</h2></div><p>{t("serviceIntro")}</p></div><div className="services-grid">{d.services.map(([name,text,icon])=><article className="service-card" key={name}><span className="service-icon"><Icon name={icon}/></span><h3>{name}</h3><p>{text}</p><Link href="/calculator">{t("more")} <Icon name="arrow" size={16}/></Link></article>)}</div></div></section><section id="ablauf" className="section process"><div className="shell process-grid"><div><p className="eyebrow">{t("easy")}</p><h2>{t("fourSteps1")}<br/>{t("fourSteps2")}</h2><Link href="/calculator" className="button button-white">{t("calculate")} <Icon name="arrow" size={17}/></Link></div><ol>{d.steps.map(([n,title,text])=><li key={n}><b>{n}</b><div><h3>{title}</h3><p>{text}</p></div></li>)}</ol></div></section><section id="preise" className="section pricing"><div className="shell"><div className="section-heading centered"><p className="eyebrow">{t("orientation")}</p><h2>{t("fairPrices")}</h2></div><div className="price-grid"><article><p>{locale==="de"?"Umzugshelfer":locale==="en"?"Mover":locale==="uk"?"Вантажник":"Грузчик"}</p><strong>ab 39 €<small>/ Std.</small></strong></article><article><p>{locale==="de"?"Transporter + Fahrer":locale==="en"?"Van + driver":locale==="uk"?"Фургон + водій":"Фургон + водитель"}</p><strong>ab 79 €<small>/ Std.</small></strong></article><article><p>{locale==="de"?"Kleiner Wohnungsumzug":locale==="en"?"Small apartment move":locale==="uk"?"Невеликий переїзд":"Небольшой переезд"}</p><strong>ab 290 €</strong></article><article><p>{locale==="de"?"Einpackservice":locale==="en"?"Packing service":locale==="uk"?"Пакування":"Упаковка"}</p><strong>ab 95 €</strong></article></div><p className="pricing-note">{t("pricingNote")}</p></div></section><section className="section portfolio"><div className="shell"><div className="section-heading"><div><p className="eyebrow">{t("workInsights")}</p><h2>{t("arrived1")}<br/>{t("arrived2")}</h2></div><p>{t("casesIntro")}</p></div><div className="case-grid">{cases.map(([name,meta,image])=><article className="case-card" key={name}><img src={image} alt=""/><div><h3>{name}</h3><p>{meta}</p><a href="#kontakt">{t("project")} <Icon name="arrow" size={16}/></a></div></article>)}</div></div></section><section className="section area"><div className="shell area-box"><div><p className="eyebrow">{t("where")}</p><h2>{t("areaTitle1")}<br/>{t("areaTitle2")}</h2><p>{t("areaText")}</p><a href="#kontakt" className="text-link">{t("askArea")} <Icon name="arrow" size={16}/></a></div><div className="map-art"><span className="map-dot dot-1"></span><span className="map-dot dot-2"></span><span className="map-dot dot-3"></span><span className="route-line"></span><b>Berlin</b><small>{t("nextStep")}</small></div></div></section><section id="faq" className="section faq"><div className="shell faq-grid"><div><p className="eyebrow">{t("commonQuestions")}</p><h2>{t("questions1")}<br/>{t("questions2")}</h2><p>{t("notThere")}</p><a className="text-link" href="tel:+493012345678">+49 30 123 45 678 <Icon name="arrow" size={16}/></a></div><div>{d.faqs.map(([q,a])=><details key={q}><summary>{q}<Icon name="arrow" size={18}/></summary><p>{a}</p></details>)}</div></div></section><section className="closing"><div className="shell"><p className="eyebrow">{t("clickStart")}</p><h2>{t("easier1")}<br/>{t("easier2")}</h2><Link href="/calculator" className="button button-white">{t("calculate")} <Icon name="arrow" size={17}/></Link></div></section></main><Footer/><div className="mobile-bar"><a href="tel:+493012345678"><Icon name="phone"/>{t("call")}</a><a href="https://wa.me/493012345678">WhatsApp</a><Link href="/calculator">{t("calculator")}</Link></div></>}
+const serviceCopy: Record<ServiceCardKey, { name: CopyKey; text: CopyKey }> = {
+  apartment: { name: "svcApartmentName", text: "svcApartmentText" },
+  house: { name: "svcHouseName", text: "svcHouseText" },
+  office: { name: "svcOfficeName", text: "svcOfficeText" },
+  furniture: { name: "svcFurnitureName", text: "svcFurnitureText" },
+  packing: { name: "svcPackingName", text: "svcPackingText" },
+  longdistance: { name: "svcLongName", text: "svcLongText" },
+};
+
+const stepKeys: { title: CopyKey; text: CopyKey }[] = [
+  { title: "step1Title", text: "step1Text" },
+  { title: "step2Title", text: "step2Text" },
+  { title: "step3Title", text: "step3Text" },
+  { title: "step4Title", text: "step4Text" },
+];
+
+const tariffCopy: Record<TariffKey, { name: CopyKey; tagline: CopyKey; features: CopyKey[]; cta: CopyKey }> = {
+  mini: {
+    name: "planMiniName", tagline: "planMiniTagline", cta: "planMiniCta",
+    features: ["planMiniFeature1", "planMiniFeature2", "planMiniFeature3"],
+  },
+  comfort: {
+    name: "planComfortName", tagline: "planComfortTagline", cta: "planComfortCta",
+    features: ["planComfortFeature1", "planComfortFeature2", "planComfortFeature3"],
+  },
+  individual: {
+    name: "planIndividualName", tagline: "planIndividualTagline", cta: "planIndividualCta",
+    features: ["planIndividualFeature1", "planIndividualFeature2", "planIndividualFeature3"],
+  },
+};
+
+const benefitKeys: { icon: IconName; title: CopyKey; text: CopyKey }[] = [
+  { icon: "layers", title: "planFits", text: "planFitsText" },
+  { icon: "shield", title: "care", text: "careText" },
+  { icon: "clock", title: "reachable", text: "reachableText" },
+];
+
+const caseKeys: { name: CopyKey; meta: CopyKey; image: string }[] = [
+  { name: "case1Name", meta: "case1Meta", image: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=900&q=80" },
+  { name: "case2Name", meta: "case2Meta", image: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=80" },
+  { name: "case3Name", meta: "case3Meta", image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80" },
+];
+
+const faqKeys: { q: CopyKey; a: CopyKey }[] = [
+  { q: "faq1Q", a: "faq1A" },
+  { q: "faq2Q", a: "faq2A" },
+  { q: "faq3Q", a: "faq3A" },
+  { q: "faq4Q", a: "faq4A" },
+];
+
+export default function Home() {
+  const { t } = useLocale();
+
+  return (
+    <>
+      <Header />
+      <main>
+        <section className="hero">
+          <div className="shell hero-grid">
+            <div className="hero-copy">
+              <p className="eyebrow">{t("homeEyebrow")}</p>
+              <h1>{t("heroTitle1")}<br /><em>{t("heroTitle2")}</em></h1>
+              <p className="lead">{t("heroLead")}</p>
+              <div className="hero-actions">
+                <Link className="button" href="/calculator">
+                  {t("calculate")} <Icon name="arrow" size={18} />
+                </Link>
+                <a className="text-link" href="#kontakt">
+                  {t("consultation")} <Icon name="arrow" size={16} />
+                </a>
+              </div>
+              <div className="trust-row">
+                <span><Icon name="clock" size={19} /> {t("sameDay")}</span>
+                <span><Icon name="shield" size={19} /> {t("transparent")}</span>
+              </div>
+            </div>
+
+            <div className="hero-art">
+              <div className="hero-image" role="img" aria-label={`${company.name} — ${t("heroTitle1")}`} />
+              <div className="hero-note">
+                <span className="round-icon"><Icon name="check" size={17} /></span>
+                <div><b>{t("allInView")}</b><small>{t("planToBuild")}</small></div>
+              </div>
+              <div className="hero-chip">
+                <Icon name="truck" size={20} />
+                <span>
+                  {t("teamReady").split("\n").map((line, index) => (
+                    <span key={line}>{line}{index === 0 && <br />}</span>
+                  ))}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <QuickCalculator />
+
+        <section className="section advantage">
+          <div className="shell">
+            <div className="section-heading centered">
+              <p className="eyebrow">{t("countOn")}</p>
+              <h2>{t("calmer1")}<br />{t("calmer2")}</h2>
+            </div>
+            <div className="benefit-grid">
+              {benefitKeys.map((item, index) => (
+                <Reveal as="article" delay={index * 70} key={item.title}>
+                  <span><Icon name={item.icon} /></span>
+                  <h3>{t(item.title)}</h3>
+                  <p>{t(item.text)}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="leistungen" className="section services">
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">{t("ourServices")}</p>
+                <h2>{t("helpNeed1")}<br />{t("helpNeed2")}</h2>
+              </div>
+              <p>{t("serviceIntro")}</p>
+            </div>
+            <div className="services-grid">
+              {serviceCards.map((card, index) => (
+                <Reveal as="article" className="service-card" delay={(index % 3) * 70} key={card.key}>
+                  <span className="service-icon"><Icon name={card.icon} /></span>
+                  <h3>{t(serviceCopy[card.key].name)}</h3>
+                  <p>{t(serviceCopy[card.key].text)}</p>
+                  <Link href={card.href}>
+                    {t("more")} <Icon name="arrow" size={16} />
+                  </Link>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="ablauf" className="section process">
+          <div className="shell process-grid">
+            <div>
+              <p className="eyebrow">{t("easy")}</p>
+              <h2>{t("fourSteps1")}<br />{t("fourSteps2")}</h2>
+              <Link href="/calculator" className="button button-white">
+                {t("calculate")} <Icon name="arrow" size={17} />
+              </Link>
+            </div>
+            <ol>
+              {stepKeys.map((item, index) => (
+                <Reveal as="li" delay={index * 60} key={item.title}>
+                  <b>{index + 1}</b>
+                  <div>
+                    <h3>{t(item.title)}</h3>
+                    <p>{t(item.text)}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section id="preise" className="section pricing">
+          <div className="shell">
+            <div className="section-heading centered">
+              <p className="eyebrow">{t("orientation")}</p>
+              <h2>{t("pricingTitle")}</h2>
+            </div>
+
+            <div className="tariff-grid">
+              {tariffs.map((tariff, index) => {
+                const copy = tariffCopy[tariff.key];
+                return (
+                  <Reveal
+                    as="article"
+                    className={["tariff-card", `tariff-${tariff.key}`, tariff.featured ? "is-featured" : ""].filter(Boolean).join(" ")}
+                    delay={index * 80}
+                    key={tariff.key}
+                  >
+                    {tariff.featured && <span className="tariff-badge">{t("popular")}</span>}
+                    <h3>{t(copy.name)}</h3>
+                    <p className="tariff-tagline">{t(copy.tagline)}</p>
+                    <p className="tariff-price">
+                      {tariff.from === null
+                        ? <span className="tariff-price-custom">{t("priceOnRequest")}</span>
+                        : <><small>{t("priceFrom")}</small> <b>{formatNumber(tariff.from)}&nbsp;€</b></>}
+                    </p>
+                    <ul className="tariff-list">
+                      {copy.features.map((feature) => (
+                        <li key={feature}><Icon name="check" size={16} /><span>{t(feature)}</span></li>
+                      ))}
+                    </ul>
+                    <Link className="button tariff-cta" href={tariff.href}>
+                      {t(copy.cta)} <Icon name="arrow" size={16} />
+                    </Link>
+                  </Reveal>
+                );
+              })}
+            </div>
+            <p className="pricing-note">{t("pricingNote")}</p>
+          </div>
+        </section>
+
+        <section className="section portfolio">
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">{t("workInsights")}</p>
+                <h2>{t("arrived1")}<br />{t("arrived2")}</h2>
+              </div>
+              <p>{t("casesIntro")}</p>
+            </div>
+            <div className="case-grid">
+              {caseKeys.map((item, index) => (
+                <Reveal as="article" className="case-card" delay={index * 70} key={item.name}>
+                  <img src={item.image} alt="" loading="lazy" />
+                  <div>
+                    <h3>{t(item.name)}</h3>
+                    <p>{t(item.meta)}</p>
+                    <a href="#kontakt">{t("project")} <Icon name="arrow" size={16} /></a>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section area">
+          <div className="shell area-box">
+            <div>
+              <p className="eyebrow">{t("where")}</p>
+              <h2>{t("areaTitle1")}<br />{t("areaTitle2")}</h2>
+              <p>{t("areaText")}</p>
+              <a href="#kontakt" className="text-link">{t("askArea")} <Icon name="arrow" size={16} /></a>
+            </div>
+            <div className="map-art">
+              <span className="map-dot dot-1" />
+              <span className="map-dot dot-2" />
+              <span className="map-dot dot-3" />
+              <span className="route-line" />
+              <b>{t("mapLabel")}</b>
+              <small>{t("nextStep")}</small>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq" className="section faq">
+          <div className="shell faq-grid">
+            <div>
+              <p className="eyebrow">{t("commonQuestions")}</p>
+              <h2>{t("questions1")}<br />{t("questions2")}</h2>
+              <p>{t("notThere")}</p>
+              <a className="text-link" href={company.phone.href}>{company.phone.display} <Icon name="arrow" size={16} /></a>
+            </div>
+            <div>
+              {faqKeys.map((item) => (
+                <details key={item.q}>
+                  <summary>{t(item.q)}<Icon name="arrow" size={18} /></summary>
+                  <p>{t(item.a)}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="closing">
+          <div className="shell">
+            <p className="eyebrow">{t("clickStart")}</p>
+            <h2>{t("easier1")}<br />{t("easier2")}</h2>
+            <Link href="/calculator" className="button button-white">
+              {t("calculate")} <Icon name="arrow" size={17} />
+            </Link>
+          </div>
+        </section>
+      </main>
+      <Footer />
+      <MobileBar />
+    </>
+  );
+}
