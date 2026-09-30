@@ -5,7 +5,10 @@ name: Демо-версия на GitHub Pages
 #
 # Что нужно один раз сделать владельцу репозитория:
 #   Settings → Pages → Build and deployment → Source: GitHub Actions
-# После этого каждый пуш в main или в рабочую ветку автоматически публикует сайт.
+#
+# Публикация выполняется с тех ветвей, которые разрешены в окружении github-pages
+# (Settings → Environments → github-pages → Deployment branches). По умолчанию это main.
+# Если ветка не разрешена, сборка проходит, а публикация аккуратно пропускается.
 
 on:
   push:
@@ -25,7 +28,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      pages_enabled: ${{ steps.pages.outputs.enabled }}
+      publish: ${{ steps.pages.outputs.publish }}
     steps:
       - uses: actions/checkout@v4
 
@@ -42,30 +45,44 @@ jobs:
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
 
-      - name: Включён ли GitHub Pages
+      - name: Проверка готовности публикации
         id: pages
-        run: |
-          if gh api "repos/${{ github.repository }}/pages" >/dev/null 2>&1; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GitHub Pages ещё не включён. Settings → Pages → Source: GitHub Actions — после этого сайт опубликуется автоматически."
-          fi
         env:
           GH_TOKEN: ${{ github.token }}
+        run: |
+          repo="${{ github.repository }}"
+          ref="${{ github.ref_name }}"
 
-      - name: Загрузка артефакта
-        if: steps.pages.outputs.enabled == 'true'
+          if ! gh api "repos/$repo/pages" >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GitHub Pages ещё не включён. Включите: Settings → Pages → Source: GitHub Actions."
+            exit 0
+          fi
+
+          allowed=$(gh api "repos/$repo/environments/github-pages/deployment-branch-policies" \
+            --jq '[.branch_policies[].name] | join(",")' 2>/dev/null || echo "")
+          echo "Разрешённые ветви для публикации: ${allowed:-нет данных}"
+
+          if [ -z "$allowed" ] || printf '%s\n' "$allowed" | tr ',' '\n' | grep -Fxq "$ref"; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Сборка готова, но ветка $ref не разрешена в окружении github-pages. Разрешите её в Settings → Environments → github-pages → Deployment branches, либо влейте изменения в main — тогда сайт опубликуется автоматически."
+          fi
+
+      - name: Настройка Pages
+        if: steps.pages.outputs.publish == 'true'
         uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v3
-        if: steps.pages.outputs.enabled == 'true'
+      - name: Загрузка артефакта
+        if: steps.pages.outputs.publish == 'true'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: out
 
   deploy:
     needs: build
-    if: needs.build.outputs.pages_enabled == 'true'
+    if: needs.build.outputs.publish == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
