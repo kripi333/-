@@ -1,6 +1,12 @@
-STATIC VERSION
+LEGACY / ARCHIVE
+================
 
-1. Upload index.html, calculator.html and style.css to the same folder on any static web server.
-2. No Node.js, npm or Next.js runtime is required.
-3. Open index.html as the entry point.
-4. The calculator runs entirely in the browser.
+Diese statische Version (index.html, calculator.html, style.css) ist der alte Stand
+des Projekts und wird nicht mehr gepflegt. Sie ist NICHT Teil der aktuellen
+Next.js-Anwendung und enthält keine aktuellen Kontaktdaten, Übersetzungen
+oder Preislogik.
+
+Maßgeblich ist allein die Anwendung im Projektwurzelverzeichnis:
+  npm install && npm run dev
+
+Если статическая версия больше не нужна — папку можно удалить целиком.

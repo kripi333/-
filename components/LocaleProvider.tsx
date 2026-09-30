@@ -1,53 +1,60 @@
 "use client";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  detectLocale, isLocale, LOCALE_COOKIE, LOCALE_STORAGE_KEY, translate,
+  type CopyKey, type Locale,
+} from "@/config/i18n";
 
-export type Locale = "de" | "en" | "uk" | "ru";
-
-type Dict = Record<string, string>;
-
-const translations: Record<Locale, Dict> = {
-  de: {
-    services:"Leistungen", prices:"Preise", process:"Ablauf", faq:"FAQ", contact:"Kontakt", calculate:"Kosten berechnen",
-    menuOpen:"Menü öffnen", call:"Anrufen", calculator:"Berechnen", quickCalc:"Unverbindlicher Schnellrechner", whatCost:"Was kostet Ihr Umzug?",
-    quickLead:"In weniger als einer Minute zur ersten Orientierung.", area:"Wohnfläche", distance:"Entfernung", originFloor:"Auszugs-Etage", destinationFloor:"Einzugs-Etage", elevator:"Aufzug", calculating:"Wird berechnet…", priceCalc:"Preis berechnen", estimate:"Ihr Richtwert", addDetails:"Details hinzufügen →",
-    footerTag:"Persönlich geplant. Sorgfältig umgesetzt.\nFür Umzüge, die sich gut anfühlen.", quickAccess:"Schnellzugriff", hereForYou:"Wir sind für Sie da", berlinArea:"Berlin & Umgebung\nDeutschlandweit auf Anfrage", privacy:"Datenschutz", imprint:"Impressum",
-    homeEyebrow:"Berlin · Brandenburg · deutschlandweit", heroTitle1:"Ihr Umzug.", heroTitle2:"Klar geplant.", heroLead:"Wohnungen, Häuser und Büros ziehen mit uns stressfreier um. Persönlich koordiniert, sorgfältig umgesetzt.", consultation:"Beratung anfragen", sameDay:"Antwort meist am selben Tag", transparent:"Transparent kalkuliert", allInView:"Alles im Blick", planToBuild:"Planung bis Aufbau", teamReady:"Umzugsteam\nfür Sie bereit",
-    countOn:"Darauf können Sie zählen", calmer1:"Mehr Ruhe für Ihren", calmer2:"nächsten Schritt.", planFits:"Ein Plan, der passt", planFitsText:"Von der Besichtigung bis zum letzten Karton: Sie wissen, was als Nächstes passiert.", care:"Sorgfalt, die man merkt", careText:"Geschulte Teams, sichere Verpackung und ein achtsamer Umgang mit Ihrem Eigentum.", reachable:"Verlässlich erreichbar", reachableText:"Feste Ansprechpartner und klare Absprachen statt endloser Warteschleifen.",
-    ourServices:"Unsere Leistungen", helpNeed1:"Genau die Hilfe,", helpNeed2:"die Sie brauchen.", serviceIntro:"Ob ein einzelnes Möbelstück oder ein kompletter Standortwechsel: Wir stellen Ihren Umzug passend zusammen.", more:"Mehr erfahren",
-    easy:"So einfach geht's", fourSteps1:"Vier Schritte bis", fourSteps2:"zum entspannten Umzug.", orientation:"Orientierung vorab", fairPrices:"Faire Preise, klar kommuniziert.", pricingNote:"Alle Preise sind Orientierungspreise. Der finale Betrag richtet sich nach Entfernung, Umfang, Zugänglichkeit und Ihrem individuellen Bedarf.",
-    workInsights:"Einblicke in unsere Arbeit", arrived1:"Gut organisiert.", arrived2:"Gut angekommen.", casesIntro:"Jeder Umzug ist anders. Ein paar Beispiele für Projekte, die wir mit Sorgfalt begleitet haben.", project:"Projekt ansehen",
-    where:"Da, wo Sie uns brauchen", areaTitle1:"Berlin, Brandenburg", areaTitle2:"und weit darüber hinaus.", areaText:"Wir fahren in ganz Berlin und im Umland. Für Fernumzüge innerhalb Deutschlands und Europas planen wir mit Ihnen die passende Route.", askArea:"Einsatzgebiet anfragen", nextStep:"Ihr nächster Schritt beginnt hier.", commonQuestions:"Häufige Fragen", questions1:"Was Sie vielleicht", questions2:"noch wissen möchten.", notThere:"Ihre Frage ist nicht dabei? Rufen Sie uns an oder schreiben Sie uns – wir helfen gern persönlich weiter.", clickStart:"Ihr Umzug beginnt mit einem Klick", easier1:"Lassen Sie uns", easier2:"den Rest leichter machen.",
-    start:"Startseite", costCalculator:"Kostenrechner", minutes:"Unverbindlich & in wenigen Minuten", calcHero1:"Was kostet Ihr", calcHero2:"Umzug?", calcHeroLead:"Geben Sie uns die wichtigsten Eckdaten. Den Preisrahmen berechnen wir direkt und transparent für Sie.", personal:"Lieber persönlich?", advise:"Wir beraten Sie gerne.", adviseText:"Rufen Sie uns an oder schreiben Sie eine Nachricht. Gemeinsam finden wir die richtige Lösung.", whatsapp:"Auf WhatsApp schreiben →",
-    legal:"Rechtliches", dataTitle:"Datenschutzerklärung", dataCapture:"Datenerfassung bei Anfragen", dataCaptureText:"Wir verarbeiten die Angaben aus Ihrer Anfrage ausschließlich, um diese zu beantworten und einen Umzug zu planen. Die Daten werden nicht für andere Zwecke verwendet.", rights:"Ihre Rechte", rightsText:"Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten. Kontaktieren Sie uns dafür unter hallo@umzugklar.de.",
-  },
-  en: {
-    services:"Services", prices:"Prices", process:"How it works", faq:"FAQ", contact:"Contact", calculate:"Calculate cost", menuOpen:"Open menu", call:"Call", calculator:"Calculate", quickCalc:"Free quick estimate", whatCost:"How much will your move cost?", quickLead:"Get an initial estimate in under a minute.", area:"Living area", distance:"Distance", originFloor:"Pickup floor", destinationFloor:"Destination floor", elevator:"Elevator", calculating:"Calculating…", priceCalc:"Calculate price", estimate:"Your estimate", addDetails:"Add details →",
-    footerTag:"Personally planned. Carefully delivered.\nFor moves that feel easy.", quickAccess:"Quick links", hereForYou:"We are here for you", berlinArea:"Berlin & surrounding area\nGermany-wide on request", privacy:"Privacy", imprint:"Legal notice",
-    homeEyebrow:"Berlin · Brandenburg · Germany-wide", heroTitle1:"Your move.", heroTitle2:"Clearly planned.", heroLead:"Apartments, houses and offices move with less stress with us. Personally coordinated and carefully executed.", consultation:"Request consultation", sameDay:"Usually reply the same day", transparent:"Transparent pricing", allInView:"Everything covered", planToBuild:"From planning to setup", teamReady:"Moving team\nready for you",
-    countOn:"What you can count on", calmer1:"More peace of mind for", calmer2:"your next step.", planFits:"A plan that fits", planFitsText:"From the first inspection to the last box, you always know what comes next.", care:"Care you can notice", careText:"Trained teams, secure packing and careful handling of your belongings.", reachable:"Reliably reachable", reachableText:"Dedicated contacts and clear agreements instead of endless waiting.", ourServices:"Our services", helpNeed1:"Exactly the help", helpNeed2:"you need.", serviceIntro:"From one piece of furniture to a complete relocation, we tailor the move to your needs.", more:"Learn more", easy:"It's that easy", fourSteps1:"Four steps to", fourSteps2:"a relaxed move.", orientation:"Upfront guidance", fairPrices:"Fair prices, clearly communicated.", pricingNote:"All prices are estimates. The final amount depends on distance, volume, access and your individual needs.", workInsights:"Our work", arrived1:"Well organized.", arrived2:"Safely arrived.", casesIntro:"Every move is different. Here are a few projects we handled with care.", project:"View project", where:"Wherever you need us", areaTitle1:"Berlin, Brandenburg", areaTitle2:"and far beyond.", areaText:"We operate throughout Berlin and the surrounding area. For long-distance moves across Germany and Europe, we plan the right route with you.", askArea:"Ask about coverage", nextStep:"Your next step starts here.", commonQuestions:"Frequently asked questions", questions1:"What you may still", questions2:"want to know.", notThere:"Your question is not listed? Call or message us and we will gladly help personally.", clickStart:"Your move starts with one click", easier1:"Let us make", easier2:"the rest easier.", start:"Home", costCalculator:"Cost calculator", minutes:"Free & in just a few minutes", calcHero1:"How much will your", calcHero2:"move cost?", calcHeroLead:"Tell us the key details. We calculate your price range directly and transparently.", personal:"Prefer to talk?", advise:"We are happy to advise you.", adviseText:"Call us or send a message. Together we will find the right solution.", whatsapp:"Message us on WhatsApp →", legal:"Legal", dataTitle:"Privacy Policy", dataCapture:"Data collected for enquiries", dataCaptureText:"We process the information from your enquiry solely to answer it and plan a move. The data is not used for other purposes.", rights:"Your rights", rightsText:"You have the right to access, correct, erase and restrict the processing of your data. Contact us at hallo@umzugklar.de.",
-  },
-  uk: {
-    services:"Послуги", prices:"Ціни", process:"Як це працює", faq:"FAQ", contact:"Контакти", calculate:"Розрахувати вартість", menuOpen:"Відкрити меню", call:"Подзвонити", calculator:"Розрахунок", quickCalc:"Безкоштовний швидкий розрахунок", whatCost:"Скільки коштуватиме переїзд?", quickLead:"Перший орієнтовний розрахунок менш ніж за хвилину.", area:"Площа житла", distance:"Відстань", originFloor:"Поверх виїзду", destinationFloor:"Поверх прибуття", elevator:"Ліфт", calculating:"Розраховуємо…", priceCalc:"Розрахувати ціну", estimate:"Орієнтовна вартість", addDetails:"Додати деталі →", footerTag:"Особисте планування. Акуратне виконання.\nДля переїздів без зайвого стресу.", quickAccess:"Швидкі посилання", hereForYou:"Ми поруч", berlinArea:"Берлін і околиці\nПо Німеччині за запитом", privacy:"Конфіденційність", imprint:"Правова інформація",
-    homeEyebrow:"Берлін · Бранденбург · по всій Німеччині", heroTitle1:"Ваш переїзд.", heroTitle2:"Чітко спланований.", heroLead:"Квартири, будинки та офіси переїжджають з нами спокійніше. Особисте координування та акуратне виконання.", consultation:"Отримати консультацію", sameDay:"Зазвичай відповідаємо того ж дня", transparent:"Прозорий розрахунок", allInView:"Усе під контролем", planToBuild:"Від плану до складання", teamReady:"Команда для переїзду\nготова до роботи", countOn:"На це можна розраховувати", calmer1:"Більше спокою для", calmer2:"вашого наступного кроку.", planFits:"План, який підходить", planFitsText:"Від огляду до останньої коробки — ви завжди знаєте, що буде далі.", care:"Акуратність у деталях", careText:"Навчена команда, безпечне пакування та дбайливе ставлення до майна.", reachable:"Завжди на зв’язку", reachableText:"Постійний контакт і чіткі домовленості без нескінченного очікування.", ourServices:"Наші послуги", helpNeed1:"Саме та допомога,", helpNeed2:"яка вам потрібна.", serviceIntro:"Від одного предмета меблів до повного переїзду — ми підберемо рішення під ваші потреби.", more:"Детальніше", easy:"Все просто", fourSteps1:"Чотири кроки до", fourSteps2:"спокійного переїзду.", orientation:"Орієнтир заздалегідь", fairPrices:"Чесні ціни без сюрпризів.", pricingNote:"Усі ціни орієнтовні. Остаточна сума залежить від відстані, обсягу, доступності та ваших потреб.", workInsights:"Наші роботи", arrived1:"Добре організовано.", arrived2:"Успішно доставлено.", casesIntro:"Кожен переїзд різний. Ось кілька проєктів, які ми виконали з особливою увагою.", project:"Переглянути проєкт", where:"Там, де ми потрібні", areaTitle1:"Берлін, Бранденбург", areaTitle2:"і значно далі.", areaText:"Працюємо по всьому Берліну та околицях. Для далеких переїздів Німеччиною та Європою разом плануємо оптимальний маршрут.", askArea:"Уточнити зону роботи", nextStep:"Ваш наступний крок починається тут.", commonQuestions:"Поширені питання", questions1:"Що ви, можливо,", questions2:"ще хочете знати.", notThere:"Не знайшли свого питання? Зателефонуйте або напишіть — ми допоможемо особисто.", clickStart:"Ваш переїзд починається з одного кліку", easier1:"Дозвольте нам", easier2:"зробити все простіше.", start:"Головна", costCalculator:"Калькулятор", minutes:"Без зобов’язань і за кілька хвилин", calcHero1:"Скільки коштуватиме", calcHero2:"ваш переїзд?", calcHeroLead:"Вкажіть основні дані. Ми одразу й прозоро розрахуємо орієнтовний діапазон ціни.", personal:"Хочете особисто?", advise:"Ми із задоволенням проконсультуємо.", adviseText:"Зателефонуйте або напишіть нам. Разом знайдемо правильне рішення.", whatsapp:"Написати у WhatsApp →", legal:"Правова інформація", dataTitle:"Політика конфіденційності", dataCapture:"Збір даних під час звернення", dataCaptureText:"Ми обробляємо дані із вашого звернення лише для відповіді та планування переїзду. Для інших цілей вони не використовуються.", rights:"Ваші права", rightsText:"Ви маєте право на доступ, виправлення, видалення та обмеження обробки ваших даних. Зв’яжіться з нами: hallo@umzugklar.de.",
-  },
-  ru: {
-    services:"Услуги", prices:"Цены", process:"Как это работает", faq:"FAQ", contact:"Контакты", calculate:"Рассчитать стоимость", menuOpen:"Открыть меню", call:"Позвонить", calculator:"Рассчитать", quickCalc:"Бесплатный быстрый расчёт", whatCost:"Сколько будет стоить переезд?", quickLead:"Первичная оценка стоимости меньше чем за минуту.", area:"Площадь жилья", distance:"Расстояние", originFloor:"Этаж отправления", destinationFloor:"Этаж назначения", elevator:"Лифт", calculating:"Рассчитываем…", priceCalc:"Рассчитать цену", estimate:"Ориентировочная стоимость", addDetails:"Добавить детали →", footerTag:"Персональное планирование. Аккуратная работа.\nДля переездов без лишнего стресса.", quickAccess:"Быстрые ссылки", hereForYou:"Мы рядом", berlinArea:"Берлин и окрестности\nПо Германии по запросу", privacy:"Конфиденциальность", imprint:"Правовая информация",
-    homeEyebrow:"Берлин · Бранденбург · по всей Германии", heroTitle1:"Ваш переезд.", heroTitle2:"Чётко спланирован.", heroLead:"Квартиры, дома и офисы переезжают с нами спокойнее. Личная координация и аккуратное выполнение.", consultation:"Получить консультацию", sameDay:"Обычно отвечаем в тот же день", transparent:"Прозрачный расчёт", allInView:"Всё под контролем", planToBuild:"От планирования до сборки", teamReady:"Команда для переезда\nготова к работе", countOn:"На это можно рассчитывать", calmer1:"Больше спокойствия для", calmer2:"вашего следующего шага.", planFits:"План, который подходит", planFitsText:"От осмотра до последней коробки — вы всегда знаете, что будет дальше.", care:"Аккуратность в деталях", careText:"Обученные сотрудники, безопасная упаковка и бережное обращение с вашим имуществом.", reachable:"Всегда на связи", reachableText:"Постоянный контакт и чёткие договорённости без бесконечного ожидания.", ourServices:"Наши услуги", helpNeed1:"Именно та помощь,", helpNeed2:"которая вам нужна.", serviceIntro:"От одного предмета мебели до полного переезда — мы подберём решение под ваши задачи.", more:"Подробнее", easy:"Всё просто", fourSteps1:"Четыре шага до", fourSteps2:"спокойного переезда.", orientation:"Ориентир заранее", fairPrices:"Честные цены без сюрпризов.", pricingNote:"Все цены ориентировочные. Итоговая сумма зависит от расстояния, объёма, доступности и ваших индивидуальных потребностей.", workInsights:"Наши работы", arrived1:"Хорошо организовано.", arrived2:"Успешно доставлено.", casesIntro:"Каждый переезд индивидуален. Вот несколько проектов, которые мы выполнили с особой заботой.", project:"Посмотреть проект", where:"Там, где мы нужны", areaTitle1:"Берлин, Бранденбург", areaTitle2:"и далеко за их пределами.", areaText:"Работаем по всему Берлину и окрестностям. Для дальних переездов по Германии и Европе вместе планируем подходящий маршрут.", askArea:"Уточнить зону работы", nextStep:"Ваш следующий шаг начинается здесь.", commonQuestions:"Частые вопросы", questions1:"Что вы, возможно,", questions2:"ещё хотите узнать.", notThere:"Не нашли свой вопрос? Позвоните или напишите нам — мы с удовольствием поможем лично.", clickStart:"Ваш переезд начинается с одного клика", easier1:"Позвольте нам", easier2:"сделать остальное проще.", start:"Главная", costCalculator:"Калькулятор", minutes:"Без обязательств и за несколько минут", calcHero1:"Сколько будет стоить", calcHero2:"ваш переезд?", calcHeroLead:"Укажите основные данные. Мы сразу и прозрачно рассчитаем ориентировочный диапазон цены.", personal:"Предпочитаете лично?", advise:"Мы с удовольствием проконсультируем.", adviseText:"Позвоните или напишите нам. Вместе найдём подходящее решение.", whatsapp:"Написать в WhatsApp →", legal:"Правовая информация", dataTitle:"Политика конфиденциальности", dataCapture:"Сбор данных при обращении", dataCaptureText:"Мы обрабатываем данные из вашего обращения только для ответа и планирования переезда. Для других целей данные не используются.", rights:"Ваши права", rightsText:"Вы имеете право на доступ, исправление, удаление и ограничение обработки ваших данных. Свяжитесь с нами: hallo@umzugklar.de.",
-  }
+type LocaleContextValue = {
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+  t: (key: CopyKey) => string;
 };
 
-const Ctx = createContext<{locale:Locale; setLocale:(l:Locale)=>void; t:(k:string)=>string}>({locale:"de",setLocale:()=>{},t:k=>k});
-export function LocaleProvider({children}:{children:React.ReactNode}){
-  const [locale,setLocaleState]=useState<Locale>("de");
-  useEffect(()=>{
-    const saved=localStorage.getItem("umzugklar-locale") as Locale|null;
-    const nav=navigator.language.toLowerCase();
-    const detected:Locale=nav.startsWith("ru")?"ru":nav.startsWith("uk")?"uk":nav.startsWith("en")?"en":"de";
-    setLocaleState(saved && ["de","en","uk","ru"].includes(saved)?saved:detected);
-  },[]);
-  const setLocale=(l:Locale)=>{setLocaleState(l);localStorage.setItem("umzugklar-locale",l);document.documentElement.lang=l;};
-  useEffect(()=>{document.documentElement.lang=locale;},[locale]);
-  const value=useMemo(()=>({locale,setLocale,t:(k:string)=>translations[locale][k] ?? translations.de[k] ?? k}),[locale]);
+const Ctx = createContext<LocaleContextValue>({
+  locale: "de",
+  setLocale: () => {},
+  t: (key) => translate("de", key),
+});
+
+export function LocaleProvider({ initialLocale, children }: { initialLocale: Locale; children: React.ReactNode }) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+
+  // Первый визит: языка в cookie нет — берём язык браузера.
+  // Дальше выбор пользователя хранится в cookie и localStorage и не перебивается.
+  useEffect(() => {
+    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+    if (isLocale(stored)) {
+      setLocaleState((current) => (current === stored ? current : stored));
+      return;
+    }
+    if (document.cookie.includes(`${LOCALE_COOKIE}=`)) return;
+    const detected = detectLocale(navigator.language);
+    setLocaleState((current) => (current === detected ? current : detected));
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  const setLocale = useCallback((next: Locale) => {
+    setLocaleState(next);
+    document.documentElement.lang = next;
+    try {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+      document.cookie = `${LOCALE_COOKIE}=${next};path=/;max-age=31536000;samesite=lax`;
+    } catch {
+      /* приватный режим — выбор языка просто не сохранится */
+    }
+  }, []);
+
+  const value = useMemo<LocaleContextValue>(
+    () => ({ locale, setLocale, t: (key: CopyKey) => translate(locale, key) }),
+    [locale, setLocale],
+  );
+
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
-export const useLocale=()=>useContext(Ctx);
+
+export const useLocale = () => useContext(Ctx);
+export type { Locale };
