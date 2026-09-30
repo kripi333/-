@@ -1,5 +1,6 @@
 import { brand } from "@/config/brand";
 import { company } from "@/config/company";
+import { withBasePath } from "@/lib/runtime";
 
 /**
  * Логотип Kushch Services.
@@ -15,7 +16,7 @@ export function Logo({ light = false, variant = "lockup" }: { light?: boolean; v
       <span className={["logo", light ? "logo-light" : ""].filter(Boolean).join(" ")}>
         <img
           className={variant === "mark" ? "logo-img logo-img-mark" : "logo-img"}
-          src={`/brand/${file}.png`}
+          src={withBasePath(`/brand/${file}.png`)}
           alt={company.name}
           width={variant === "mark" ? 40 : 200}
           height={variant === "mark" ? 40 : 40}

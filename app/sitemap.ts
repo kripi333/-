@@ -1,4 +1,7 @@
 import type { MetadataRoute } from "next";
+
+/** Статический экспорт (GitHub Pages) требует явно помечать эти роуты статическими. */
+export const dynamic = "force-static";
 import { company } from "@/config/company";
 
 export default function sitemap(): MetadataRoute.Sitemap {

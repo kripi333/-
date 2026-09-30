@@ -6,16 +6,16 @@ import type { RequestSummary } from "@/lib/requestSummary";
 import type { CopyKey } from "@/config/i18n";
 import type { MovingType, ServiceKey } from "@/config/pricing";
 
-const typeLabelKeys: Record<MovingType, CopyKey> = {
+export const typeLabelKeys: Record<MovingType, CopyKey> = {
   apartment: "typeApartment", house: "typeHouse", office: "typeOffice", furniture: "typeFurniture", other: "typeOther",
 };
 
-const serviceLabelKeys: Record<ServiceKey, CopyKey> = {
+export const serviceLabelKeys: Record<ServiceKey, CopyKey> = {
   packing: "servicePacking", materials: "serviceMaterials", disassembly: "serviceDisassembly", assembly: "serviceAssembly",
   bulky: "serviceBulky", appliances: "serviceAppliances", disposal: "serviceDisposal", storage: "serviceStorage",
 };
 
-function floorsLine(summary: RequestSummary, t: (key: CopyKey) => string) {
+export function floorsLine(summary: RequestSummary, t: (key: CopyKey) => string) {
   const floor = (value: number) => (value === 0 ? t("ground") : `${value}`);
   const lift = (value: boolean) => (value ? t("withElevator") : t("withoutElevator"));
   return `${floor(summary.originFloor)} (${lift(summary.originElevator)}) → ${floor(summary.destinationFloor)} (${lift(summary.destinationElevator)})`;

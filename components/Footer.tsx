@@ -30,10 +30,10 @@ export function Footer() {
 
         <div>
           <h3>{t("quickAccess")}</h3>
-          <a href="/#leistungen">{t("services")}</a>
-          <a href="/#preise">{t("prices")}</a>
+          <Link href="/#leistungen">{t("services")}</Link>
+          <Link href="/#preise">{t("prices")}</Link>
           <Link href="/calculator">{t("calculate")}</Link>
-          <a href="/#faq">FAQ</a>
+          <Link href="/#faq">FAQ</Link>
         </div>
 
         <div>

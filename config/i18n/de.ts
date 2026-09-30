@@ -303,6 +303,7 @@ export const de = {
   noSummaryText: "Füllen Sie zuerst den Kalkulator aus — danach können Sie die Anfrage mit allen Details senden.",
   goToCalculator: "Zum Kalkulator",
   replyTime: "Wir antworten meist am selben Tag.",
+  staticDemoNote: "Demo-Version: Die Anfrage öffnet sich in Ihrem E-Mail-Programm. Auf der Live-Seite wird sie direkt an uns gesendet.",
 
   // Rechtliches
   legal: "Rechtliches",

@@ -284,6 +284,7 @@ export const en: Record<CopyKey, string> = {
   noSummaryText: "Please complete the calculator first — then you can send your enquiry with all the details.",
   goToCalculator: "Open the calculator",
   replyTime: "We usually answer the same day.",
+  staticDemoNote: "Demo version: your enquiry opens in your e-mail app. On the live site it is sent to us directly.",
 
   legal: "Legal",
   dataTitle: "Privacy policy",

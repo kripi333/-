@@ -9,6 +9,7 @@ import { limits, pricing, type CalculationResult, type MovingType, type ServiceK
 import { serviceOrder } from "@/config/services";
 import { initialCalculatorData, type CalculatorData } from "@/lib/calculatorPrefill";
 import { formatNumber, formatPrice, formatPriceRange } from "@/lib/format";
+import { requestCalculation } from "@/lib/calculateClient";
 import { saveRequestSummary } from "@/lib/requestSummary";
 import type { CopyKey } from "@/config/i18n";
 
@@ -55,18 +56,12 @@ export function FullCalculator({ prefill }: { prefill?: Partial<CalculatorData> 
     setBusy(true);
     setError(null);
     try {
-      const response = await fetch("/api/calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          movingType: data.movingType, area: data.area, distance: data.distance,
-          originFloor: data.originFloor, destinationFloor: data.destinationFloor,
-          originElevator: data.originElevator, destinationElevator: data.destinationElevator,
-          services: data.services,
-        }),
+      const payload = await requestCalculation({
+        movingType: data.movingType, area: data.area, distance: data.distance,
+        originFloor: data.originFloor, destinationFloor: data.destinationFloor,
+        originElevator: data.originElevator, destinationElevator: data.destinationElevator,
+        services: data.services,
       });
-      if (!response.ok) throw new Error("request failed");
-      const payload = (await response.json()) as Result;
       setResult(payload);
       saveRequestSummary({ ...data, min: payload.min, max: payload.max, id: payload.id, createdAt: Date.now() });
     } catch {

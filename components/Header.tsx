@@ -36,7 +36,7 @@ export function Header() {
 
         <nav className={open ? "navlinks is-open" : "navlinks"} id="hauptnavigation">
           {links.map(([label, href]) => (
-            <a onClick={() => setOpen(false)} href={href} key={href}>{label}</a>
+            <Link onClick={() => setOpen(false)} href={href} key={href}>{label}</Link>
           ))}
           <div className="lang-switch" role="group" aria-label={t("language")}>
             {locales.map((code: Locale) => (

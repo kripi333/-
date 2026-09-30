@@ -7,6 +7,7 @@ import { Select, type SelectOption } from "./Select";
 import { useLocale } from "./LocaleProvider";
 import { limits, type CalculationResult } from "@/config/pricing";
 import { formatPriceRange } from "@/lib/format";
+import { requestCalculation } from "@/lib/calculateClient";
 import { saveRequestSummary } from "@/lib/requestSummary";
 
 type Result = CalculationResult & { id: string };
@@ -32,16 +33,10 @@ export function QuickCalculator() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          movingType: "apartment", area, distance, originFloor: from, destinationFloor: to,
-          originElevator: fromLift, destinationElevator: toLift, services: [],
-        }),
+      const payload = await requestCalculation({
+        movingType: "apartment", area, distance, originFloor: from, destinationFloor: to,
+        originElevator: fromLift, destinationElevator: toLift, services: [],
       });
-      if (!response.ok) throw new Error("request failed");
-      const payload = (await response.json()) as Result;
       setResult(payload);
       saveRequestSummary({
         movingType: "apartment", area, distance, originFloor: from, destinationFloor: to,

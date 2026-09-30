@@ -5,8 +5,11 @@ import "./globals.css";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { company } from "@/config/company";
 import { LOCALE_COOKIE, isLocale, translate, type Locale } from "@/config/i18n";
+import { staticDemo } from "@/lib/runtime";
 
 async function currentLocale(): Promise<Locale> {
+  // В статической демо-версии серверных cookie нет: язык подхватывает LocaleProvider в браузере.
+  if (staticDemo) return "de";
   const cookieStore = await cookies();
   const stored = cookieStore.get(LOCALE_COOKIE)?.value;
   return isLocale(stored) ? stored : "de";

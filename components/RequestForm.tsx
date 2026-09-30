@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Icon, type IconName } from "./Icon";
-import { RequestSummaryView } from "./RequestSummaryView";
+import { RequestSummaryView, floorsLine, serviceLabelKeys, typeLabelKeys } from "./RequestSummaryView";
 import { useLocale } from "./LocaleProvider";
 import { company } from "@/config/company";
 import { readRequestSummary, type RequestSummary } from "@/lib/requestSummary";
+import { staticDemo } from "@/lib/runtime";
+import { formatNumber, formatPriceRange } from "@/lib/format";
 import type { CopyKey } from "@/config/i18n";
 
 type ChannelKey = "telegram" | "instagram" | "viber" | "email" | "phone";
@@ -54,12 +56,18 @@ export function RequestForm() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!summary) return;
     const list = validate();
     setErrors(list);
     if (list.length > 0) return;
 
     setStatus("sending");
     try {
+      if (staticDemo) {
+        window.location.href = buildMailto(summary, contactPairs.map((channel) => ({ key: channel.key, value: values[channel.key].trim() })));
+        setStatus("sent");
+        return;
+      }
       const response = await fetch("/api/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,6 +86,28 @@ export function RequestForm() {
       setStatus("idle");
       setErrors([t("errGeneric")]);
     }
+  };
+
+  /** В статической демо-версии серверных роутов нет: собираем письмо в почтовом клиенте. */
+  const buildMailto = (current: RequestSummary, contacts: { key: ChannelKey; value: string }[]) => {
+    const labelOf: Record<ChannelKey, string> = {
+      telegram: t("telegram"), instagram: t("instagram"), viber: t("viber"), email: t("email"), phone: t("phone"),
+    };
+    const lines = [
+      `${t("nameLabel")}: ${name.trim()}`,
+      ...contacts.map((contact) => `${labelOf[contact.key]}: ${contact.value}`),
+      message.trim() ? `${t("messageLabel")}: ${message.trim()}` : "",
+      "",
+      `${t("summaryTitle")} · ${current.id}`,
+      `${t("summaryType")}: ${t(typeLabelKeys[current.movingType])}`,
+      `${t("summaryDistance")}: ${formatNumber(current.distance)} km`,
+      `${t("summaryFloors")}: ${floorsLine(current, t)}`,
+      `${t("summaryServices")}: ${current.services.map((key) => t(serviceLabelKeys[key])).join(", ") || t("noServices")}`,
+      `${t("summaryPrice")}: ${formatPriceRange(current.min, current.max)}`,
+      `${t("estimateId")}: ${current.id}`,
+    ].filter(Boolean);
+    const subject = `${t("submitRequest")} · ${current.id}`;
+    return `mailto:${company.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
   };
 
   if (summary === undefined) {
@@ -198,6 +228,7 @@ export function RequestForm() {
               <Icon name="phone" size={16} /> {company.phone.display}
             </a>
           </div>
+          {staticDemo && <p className="fineprint">{t("staticDemoNote")}</p>}
         </div>
 
         <aside className="request-summary">
