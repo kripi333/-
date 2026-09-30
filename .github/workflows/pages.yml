@@ -1,8 +1,11 @@
 name: Демо-версия на GitHub Pages
 
-# Публичная статическая версия сайта: расчёт цены считается в браузере,
-# форма заявки открывает почтовый клиент. Для работы нужен включённый
-# GitHub Pages (Settings → Pages → Source: GitHub Actions).
+# Публичная статическая версия сайта (обычная ссылка, без токенов превью).
+# Расчёт цены считается в браузере, форма заявки открывает почтовый клиент.
+#
+# Что нужно один раз сделать владельцу репозитория:
+#   Settings → Pages → Build and deployment → Source: GitHub Actions
+# После этого каждый пуш в main или в рабочую ветку автоматически публикует сайт.
 
 on:
   push:
@@ -21,6 +24,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,23 +37,35 @@ jobs:
       - name: Установка зависимостей
         run: npm ci
 
-      - name: Включение GitHub Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - name: Статическая сборка
         run: npm run build:static
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
 
+      - name: Включён ли GitHub Pages
+        id: pages
+        run: |
+          if gh api "repos/${{ github.repository }}/pages" >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GitHub Pages ещё не включён. Settings → Pages → Source: GitHub Actions — после этого сайт опубликуется автоматически."
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Загрузка артефакта
-        uses: actions/upload-pages-artifact@v3
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.pages.outputs.enabled == 'true'
         with:
           path: out
 
   deploy:
     needs: build
+    if: needs.build.outputs.pages_enabled == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
