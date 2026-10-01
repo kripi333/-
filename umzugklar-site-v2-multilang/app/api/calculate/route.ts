@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { calculateMove, type CalculationInput, pricing } from "@/config/pricing";
 
 const validTypes = Object.keys(pricing.base);
